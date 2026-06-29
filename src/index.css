@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --color-innova-blue: #1e5fae;
+  --color-innova-blue-light: #e8f0fa;
+  --color-innova-orange: #f7941d;
+  --color-innova-green: #8dc63f;
+  --color-innova-dark: #1a3a5c;
+}

@@ -7,6 +7,8 @@ import Crear from './pages/Crear'
 import Galeria from './pages/Galeria'
 import Sustento from './pages/Sustento'
 
+import Acerca from './pages/Acerca'
+
 function App() {
   return (
     <Routes>
@@ -17,6 +19,7 @@ function App() {
         <Route path="/crear" element={<Crear />} />
         <Route path="/galeria" element={<Galeria />} />
         <Route path="/sustento" element={<Sustento />} />
+        <Route path="/acerca" element={<Acerca />} />
       </Route>
     </Routes>
   )

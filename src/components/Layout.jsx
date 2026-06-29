@@ -1,13 +1,11 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { Heart, Home, BookOpen, Sparkles, PencilLine, Images, GraduationCap } from 'lucide-react'
+import { Heart, Home, Sparkles, PencilLine, Images, Info } from 'lucide-react'
 
 const navItems = [
     { to: '/', label: 'Inicio', icon: Home },
-    { to: '/proyecto', label: 'El Proyecto', icon: BookOpen },
     { to: '/explorador', label: 'Explorador', icon: Sparkles },
     { to: '/crear', label: 'Crear mi cuento', icon: PencilLine },
     { to: '/galeria', label: 'Galería', icon: Images },
-    { to: '/sustento', label: 'Para el Jurado', icon: GraduationCap },
 ]
 
 export default function Layout() {
@@ -63,8 +61,16 @@ export default function Layout() {
                 <Outlet />
             </main>
 
-            <footer className="bg-white border-t py-4 text-center text-sm text-gray-500">
-                Hecho con <Heart size={14} className="inline text-innova-orange" fill="currentColor" /> para Innova Schools — Unidocencia
+            <footer className="bg-white border-t py-4 px-4 flex items-center justify-center gap-4 text-sm text-gray-500 relative">
+                <span>
+                    Hecho con <Heart size={14} className="inline text-innova-orange" fill="currentColor" /> para Innova Schools — Unidocencia
+                </span>
+                <Link
+                    to="/acerca"
+                    className="absolute right-4 flex items-center gap-1 text-xs text-gray-400 hover:text-innova-blue"
+                >
+                    <Info size={14} /> Acerca de
+                </Link>
             </footer>
         </div>
     )

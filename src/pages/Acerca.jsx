@@ -19,7 +19,7 @@ export default function Acerca() {
                         Acerca del Proyecto
                     </h1>
                     <p className="text-gray-600">
-                        Información para docentes, familias y jurado evaluador
+                        Información para docentes y familias
                     </p>
                 </motion.div>
 
@@ -40,7 +40,7 @@ export default function Acerca() {
                                 : 'border-gray-200 text-gray-500 hover:border-innova-blue'
                             }`}
                     >
-                        <GraduationCap size={16} /> Para el Jurado
+                        <GraduationCap size={16} /> Para Docentes y Familias
                     </button>
                 </div>
             </div>

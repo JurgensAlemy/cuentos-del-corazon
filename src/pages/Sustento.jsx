@@ -49,7 +49,7 @@ export default function Sustento() {
                 className="text-center mb-12"
             >
                 <div className="inline-flex items-center gap-2 bg-innova-blue-light text-innova-blue text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-                    <GraduationCap size={16} /> Para el Jurado
+                    <GraduationCap size={16} /> Para Docentes y Familias
                 </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-innova-blue mb-3">
                     Sustento Teórico

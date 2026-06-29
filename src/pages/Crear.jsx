@@ -11,6 +11,9 @@ import VoiceRecorder from '../components/VoiceRecorder'
 import ImageUploader from '../components/ImageUploader'
 
 import { guardarCuento } from '../utils/cuentosStorage'
+import { sonidoGuardar, sonidoExito } from '../utils/sounds'
+import Confetti from '../components/Confetti'
+import BotonLeer from '../components/BotonLeer'
 
 const emocionesDisponibles = [
     { id: 'alegria', emoji: '😊', label: 'Alegría', color: 'bg-innova-orange' },
@@ -36,12 +39,16 @@ export default function Crear() {
     const [paginaActual, setPaginaActual] = useState(0)
     const [generandoPDF, setGenerandoPDF] = useState(false)
     const [publicado, setPublicado] = useState(false)
+    const [mostrarConfeti, setMostrarConfeti] = useState(false)
     const previewRef = useRef(null)
 
     const actualizarPagina = (campo, valor) => {
         setPaginas((prev) =>
             prev.map((p, i) => (i === paginaActual ? { ...p, [campo]: valor } : p))
         )
+        if (campo === 'dibujo' || campo === 'imagen' || campo === 'audio') {
+            sonidoGuardar()
+        }
     }
 
     const agregarPagina = () => {
@@ -76,6 +83,9 @@ export default function Crear() {
     const publicarEnGaleria = () => {
         guardarCuento({ titulo, emocion, paginas })
         setPublicado(true)
+        sonidoExito()
+        setMostrarConfeti(true)
+        setTimeout(() => setMostrarConfeti(false), 2500)
     }
 
     const pagina = paginas[paginaActual]
@@ -294,70 +304,78 @@ export default function Crear() {
 
     // ---------- PANTALLA 3: LIBRO FINAL ----------
     return (
-        <div className="max-w-3xl mx-auto px-4 py-10">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
-                <button
-                    onClick={() => setPaso('editando')}
-                    className="flex items-center gap-1 text-gray-500 hover:text-innova-blue"
-                >
-                    <ArrowLeft size={18} /> Seguir editando
-                </button>
-                <div className="flex gap-3">
+        <>
+            {mostrarConfeti && <Confetti />}
+            <div className="max-w-3xl mx-auto px-4 py-10">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
                     <button
-                        onClick={publicarEnGaleria}
-                        disabled={publicado}
-                        className="flex items-center gap-2 bg-innova-green hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-full shadow-md disabled:opacity-60"
+                        onClick={() => setPaso('editando')}
+                        className="flex items-center gap-1 text-gray-500 hover:text-innova-blue"
                     >
-                        <Images size={18} />
-                        {publicado ? '¡Publicado! ✓' : 'Publicar en la Galería'}
+                        <ArrowLeft size={18} /> Seguir editando
                     </button>
-                    <button
-                        onClick={exportarPDF}
-                        disabled={generandoPDF}
-                        className="flex items-center gap-2 bg-innova-orange hover:bg-orange-600 text-white font-semibold px-5 py-3 rounded-full shadow-md disabled:opacity-60"
-                    >
-                        <Download size={18} />
-                        {generandoPDF ? 'Generando...' : 'Descargar mi cuento (PDF)'}
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={publicarEnGaleria}
+                            disabled={publicado}
+                            className="flex items-center gap-2 bg-innova-green hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-full shadow-md disabled:opacity-60"
+                        >
+                            <Images size={18} />
+                            {publicado ? '¡Publicado! ✓' : 'Publicar en la Galería'}
+                        </button>
+                        <button
+                            onClick={exportarPDF}
+                            disabled={generandoPDF}
+                            className="flex items-center gap-2 bg-innova-orange hover:bg-orange-600 text-white font-semibold px-5 py-3 rounded-full shadow-md disabled:opacity-60"
+                        >
+                            <Download size={18} />
+                            {generandoPDF ? 'Generando...' : 'Descargar mi cuento (PDF)'}
+                        </button>
+                    </div>
+                </div>
+
+                <div ref={previewRef} className="space-y-6">
+                    {paginas.map((p, i) => (
+                        <div
+                            key={p.id}
+                            className="pagina-pdf bg-white rounded-2xl shadow-sm p-8 grid md:grid-cols-2 gap-6 items-center"
+                        >
+                            <div>
+                                {i === 0 && (
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Sparkles size={18} className="text-innova-orange" />
+                                        <h2 className="text-2xl font-extrabold text-innova-blue">{titulo}</h2>
+                                    </div>
+                                )}
+                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                                    {p.texto || 'Esta página todavía no tiene texto.'}
+                                </p>
+                                {p.texto && (
+                                    <div className="mt-2">
+                                        <BotonLeer texto={p.texto} />
+                                    </div>
+                                )}
+                                {p.audio && (
+                                    <audio src={p.audio} controls className="mt-3 h-9" />
+                                )}
+                            </div>
+                            <div className="flex justify-center">
+                                {(p.modoVisual === 'dibujo' ? p.dibujo : p.imagen) ? (
+                                    <img
+                                        src={p.modoVisual === 'dibujo' ? p.dibujo : p.imagen}
+                                        alt={`Ilustración página ${i + 1}`}
+                                        className="max-h-56 rounded-xl border border-gray-200"
+                                    />
+                                ) : (
+                                    <div className="w-full h-40 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 text-sm">
+                                        Sin ilustración
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
-
-            <div ref={previewRef} className="space-y-6">
-                {paginas.map((p, i) => (
-                    <div
-                        key={p.id}
-                        className="pagina-pdf bg-white rounded-2xl shadow-sm p-8 grid md:grid-cols-2 gap-6 items-center"
-                    >
-                        <div>
-                            {i === 0 && (
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Sparkles size={18} className="text-innova-orange" />
-                                    <h2 className="text-2xl font-extrabold text-innova-blue">{titulo}</h2>
-                                </div>
-                            )}
-                            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                {p.texto || 'Esta página todavía no tiene texto.'}
-                            </p>
-                            {p.audio && (
-                                <audio src={p.audio} controls className="mt-3 h-9" />
-                            )}
-                        </div>
-                        <div className="flex justify-center">
-                            {(p.modoVisual === 'dibujo' ? p.dibujo : p.imagen) ? (
-                                <img
-                                    src={p.modoVisual === 'dibujo' ? p.dibujo : p.imagen}
-                                    alt={`Ilustración página ${i + 1}`}
-                                    className="max-h-56 rounded-xl border border-gray-200"
-                                />
-                            ) : (
-                                <div className="w-full h-40 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 text-sm">
-                                    Sin ilustración
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+        </>
     )
 }

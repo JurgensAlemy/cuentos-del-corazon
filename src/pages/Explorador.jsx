@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Lightbulb, MessageCircleHeart, X } from 'lucide-react'
 import { emociones } from '../data/emociones'
 
+import BotonLeer from '../components/BotonLeer'
+
 export default function Explorador() {
     const [seleccionada, setSeleccionada] = useState(null)
 
@@ -72,10 +74,16 @@ export default function Explorador() {
                                 </h2>
                             </div>
 
-                            <div className={`rounded-xl p-4 mb-5 ${seleccionada.bg}`}>
+                            <div className={`rounded-xl p-4 mb-3 ${seleccionada.bg}`}>
                                 <p className="text-gray-700 leading-relaxed">
                                     {seleccionada.situacion}
                                 </p>
+                            </div>
+
+                            <div className="mb-5">
+                                <BotonLeer
+                                    texto={`${seleccionada.situacion}. ¿Cómo puedo manejarla? ${seleccionada.estrategias.join('. ')}. ${seleccionada.pregunta}`}
+                                />
                             </div>
 
                             <div className="mb-5">

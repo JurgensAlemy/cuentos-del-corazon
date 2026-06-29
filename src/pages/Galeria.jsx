@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { BookOpen, Trash2, X, Images as ImagesIcon } from 'lucide-react'
 import { obtenerCuentos, eliminarCuento } from '../utils/cuentosStorage'
 
+import BotonLeer from '../components/BotonLeer'
+
 const emocionInfo = {
     alegria: { emoji: '😊', label: 'Alegría', color: 'border-innova-orange' },
     tristeza: { emoji: '😢', label: 'Tristeza', color: 'border-innova-blue' },
@@ -112,9 +114,16 @@ export default function Galeria() {
                             <div className="space-y-6">
                                 {abierto.paginas.map((p, i) => (
                                     <div key={p.id || i} className="grid md:grid-cols-2 gap-4 items-center border-b pb-5 last:border-0">
-                                        <p className="text-gray-700 whitespace-pre-line">
-                                            {p.texto || 'Sin texto en esta página.'}
-                                        </p>
+                                        <div>
+                                            <p className="text-gray-700 whitespace-pre-line">
+                                                {p.texto || 'Sin texto en esta página.'}
+                                            </p>
+                                            {p.texto && (
+                                                <div className="mt-2">
+                                                    <BotonLeer texto={p.texto} />
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex justify-center">
                                             {(p.modoVisual === 'dibujo' ? p.dibujo : p.imagen) ? (
                                                 <img

@@ -57,7 +57,7 @@ export default function Proyecto() {
                         <h2 className="text-xl font-bold text-innova-dark mb-2">
                             La necesidad detectada
                         </h2>
-                        <p className="text-gray-600 leading-relaxed">
+                        <p className="text-gray-600 leading-relaxed mb-3">
                             La ficha de autoevaluación socioemocional 2025, junto con
                             observaciones docentes y registros tutoriales, reveló que el{' '}
                             <span className="font-bold text-innova-orange">
@@ -66,6 +66,15 @@ export default function Proyecto() {
                             tiene dificultades para identificar, expresar y regular sus
                             emociones. Esto repercute en su desempeño académico, genera
                             frustración y dificulta la convivencia escolar.
+                        </p>
+                        <p className="text-gray-600 leading-relaxed">
+                            Entre las principales causas identificadas se encuentran los{' '}
+                            <span className="font-semibold text-innova-dark">conflictos familiares</span>{' '}
+                            y las{' '}
+                            <span className="font-semibold text-innova-dark">
+                                limitadas oportunidades para desarrollar habilidades socioemocionales
+                            </span>{' '}
+                            en el entorno escolar.
                         </p>
                     </div>
                 </div>

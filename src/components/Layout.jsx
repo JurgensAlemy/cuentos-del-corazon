@@ -1,6 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Heart, Home, Sparkles, PencilLine, Images, Info } from 'lucide-react'
 
+import { motion, AnimatePresence } from 'framer-motion'
+
 const navItems = [
     { to: '/', label: 'Inicio', icon: Home },
     { to: '/explorador', label: 'Explorador', icon: Sparkles },
@@ -58,7 +60,17 @@ export default function Layout() {
             </header>
 
             <main className="flex-1">
-                <Outlet />
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={location.pathname}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    >
+                        <Outlet />
+                    </motion.div>
+                </AnimatePresence>
             </main>
 
             <footer className="bg-white border-t py-4 px-4 flex items-center justify-center gap-4 text-sm text-gray-500 relative">

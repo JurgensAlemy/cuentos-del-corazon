@@ -1,20 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Trash2, X, Images as ImagesIcon } from 'lucide-react'
-import { obtenerCuentos, eliminarCuento } from '../utils/cuentosStorage'
-
+import { BookOpen, Trash2, X, Images as ImagesIcon, Sparkles } from 'lucide-react'
 import BotonLeer from '../components/BotonLeer'
 
+import { obtenerCuentos, eliminarCuento, agregarReaccion, agregarComentario } from '../utils/cuentosStorage'
+import ComentariosFamilia from '../components/ComentariosFamilia'
+import Reacciones from '../components/Reacciones'
+import { sonidoClickSuave, sonidoExito } from '../utils/sounds'
+
+import ConfirmDialog from '../components/ConfirmDialog'
+
 const emocionInfo = {
-    alegria: { emoji: '😊', label: 'Alegría', color: 'border-innova-orange' },
-    tristeza: { emoji: '😢', label: 'Tristeza', color: 'border-innova-blue' },
-    enojo: { emoji: '😡', label: 'Enojo', color: 'border-red-400' },
-    miedo: { emoji: '😨', label: 'Miedo', color: 'border-innova-green' },
+    alegria: { emoji: '😊', label: 'Alegría', color: 'border-innova-orange', bg: 'bg-innova-orange/10 text-innova-orange' },
+    tristeza: { emoji: '😢', label: 'Tristeza', color: 'border-innova-blue', bg: 'bg-innova-blue-light text-innova-blue' },
+    enojo: { emoji: '😡', label: 'Enojo', color: 'border-red-400', bg: 'bg-red-50 text-red-500' },
+    miedo: { emoji: '😨', label: 'Miedo', color: 'border-innova-green', bg: 'bg-innova-green/10 text-innova-green' },
 }
 
 export default function Galeria() {
     const [cuentos, setCuentos] = useState([])
     const [abierto, setAbierto] = useState(null)
+    const [confirmando, setConfirmando] = useState(false)
+    const [filtro, setFiltro] = useState('todas')
 
     useEffect(() => {
         setCuentos(obtenerCuentos())
@@ -24,31 +31,98 @@ export default function Galeria() {
         eliminarCuento(id)
         setCuentos(obtenerCuentos())
         setAbierto(null)
+        setConfirmando(false)
     }
+
+    const reaccionar = (cuentoId, tipo) => {
+        const actualizado = agregarReaccion(cuentoId, tipo)
+        setCuentos(obtenerCuentos())
+        if (abierto?.id === cuentoId) setAbierto(actualizado)
+        sonidoClickSuave()
+    }
+
+    const comentar = (cuentoId, autor, texto) => {
+        const actualizado = agregarComentario(cuentoId, autor, texto)
+        setCuentos(obtenerCuentos())
+        if (abierto?.id === cuentoId) setAbierto(actualizado)
+        sonidoExito()
+    }
+
+    const cuentosFiltrados = useMemo(() => {
+        if (filtro === 'todas') return cuentos
+        return cuentos.filter((c) => c.emocion === filtro)
+    }, [cuentos, filtro])
+
+    const conteoPorEmocion = useMemo(() => {
+        const conteo = {}
+        cuentos.forEach((c) => {
+            conteo[c.emocion] = (conteo[c.emocion] || 0) + 1
+        })
+        return conteo
+    }, [cuentos])
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-12">
             <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-10"
+                className="text-center mb-6"
             >
                 <h1 className="text-3xl md:text-4xl font-extrabold text-innova-blue mb-3">
                     Galería de Cuentos
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-3">
                     Los cuentos digitales creados por los estudiantes ✨
                 </p>
+                <div className="inline-flex items-center gap-2 bg-innova-blue-light text-innova-blue text-sm font-semibold px-4 py-1.5 rounded-full">
+                    <Sparkles size={14} />
+                    {cuentos.length} cuento{cuentos.length !== 1 && 's'} publicado{cuentos.length !== 1 && 's'}
+                </div>
             </motion.div>
+
+            {/* FILTROS POR EMOCIÓN */}
+            {cuentos.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2 mb-10">
+                    <button
+                        onClick={() => setFiltro('todas')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-colors ${filtro === 'todas'
+                            ? 'bg-innova-blue text-white border-innova-blue'
+                            : 'border-gray-200 text-gray-500 hover:border-innova-blue'
+                            }`}
+                    >
+                        Todas ({cuentos.length})
+                    </button>
+                    {Object.entries(emocionInfo).map(([id, info]) => {
+                        const cantidad = conteoPorEmocion[id] || 0
+                        if (cantidad === 0) return null
+                        return (
+                            <button
+                                key={id}
+                                onClick={() => setFiltro(id)}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border-2 transition-colors ${filtro === id
+                                    ? `${info.color} ${info.bg} border-2`
+                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                    }`}
+                            >
+                                {info.emoji} {info.label} ({cantidad})
+                            </button>
+                        )
+                    })}
+                </div>
+            )}
 
             {cuentos.length === 0 ? (
                 <div className="text-center text-gray-400 py-16">
                     <ImagesIcon size={48} className="mx-auto mb-3 opacity-50" />
                     <p>Todavía no hay cuentos publicados en este dispositivo.</p>
                 </div>
+            ) : cuentosFiltrados.length === 0 ? (
+                <div className="text-center text-gray-400 py-16">
+                    <p>No hay cuentos con esta emoción todavía.</p>
+                </div>
             ) : (
                 <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {cuentos.map((c, i) => {
+                    {cuentosFiltrados.map((c, i) => {
                         const info = emocionInfo[c.emocion] || {}
                         const portada = c.paginas?.[0]
                         const imagenPortada =
@@ -75,6 +149,11 @@ export default function Galeria() {
                                     <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                                         {info.emoji} {info.label} · {c.paginas?.length} página{c.paginas?.length !== 1 && 's'}
                                     </p>
+                                    {c.reacciones && Object.values(c.reacciones).some((v) => v > 0) && (
+                                        <p className="text-xs text-innova-blue mt-1">
+                                            {Object.values(c.reacciones).reduce((a, b) => a + b, 0)} reacciones
+                                        </p>
+                                    )}
                                 </div>
                             </motion.button>
                         )
@@ -142,8 +221,25 @@ export default function Galeria() {
                                 ))}
                             </div>
 
+                            <div className="mt-6 pt-6 border-t">
+                                <p className="text-sm font-semibold text-innova-dark mb-3">
+                                    ¿Qué te pareció este cuento?
+                                </p>
+                                <Reacciones
+                                    reacciones={abierto.reacciones}
+                                    onReaccionar={(tipo) => reaccionar(abierto.id, tipo)}
+                                />
+                            </div>
+
+                            <div className="mt-6 pt-6 border-t">
+                                <ComentariosFamilia
+                                    comentarios={abierto.comentarios}
+                                    onComentar={(autor, texto) => comentar(abierto.id, autor, texto)}
+                                />
+                            </div>
+
                             <button
-                                onClick={() => borrar(abierto.id)}
+                                onClick={() => setConfirmando(true)}
                                 className="flex items-center gap-2 text-sm text-red-400 hover:text-red-500 mt-6"
                             >
                                 <Trash2 size={14} /> Eliminar este cuento
@@ -152,6 +248,14 @@ export default function Galeria() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <ConfirmDialog
+                abierto={confirmando}
+                titulo="¿Eliminar este cuento?"
+                mensaje="Esta acción no se puede deshacer. El cuento se eliminará para siempre de este dispositivo."
+                onConfirmar={() => borrar(abierto.id)}
+                onCancelar={() => setConfirmando(false)}
+            />
         </div>
     )
 }

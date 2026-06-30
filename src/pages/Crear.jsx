@@ -1,3 +1,4 @@
+import { preguntaAleatoria } from '../data/preguntasRetadoras'
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -14,6 +15,8 @@ import { guardarCuento } from '../utils/cuentosStorage'
 import { sonidoGuardar, sonidoExito } from '../utils/sounds'
 import Confetti from '../components/Confetti'
 import BotonLeer from '../components/BotonLeer'
+
+import ConfirmDialog from '../components/ConfirmDialog'
 
 const emocionesDisponibles = [
     { id: 'alegria', emoji: '😊', label: 'Alegría', color: 'bg-innova-orange' },
@@ -32,15 +35,18 @@ const paginaVacia = () => ({
 })
 
 export default function Crear() {
-    const [paso, setPaso] = useState('inicio') // inicio | editando | final
+    const [paso, setPaso] = useState('inicio') // inicio | reto | editando | final
     const [titulo, setTitulo] = useState('')
     const [emocion, setEmocion] = useState(null)
     const [paginas, setPaginas] = useState([paginaVacia()])
     const [paginaActual, setPaginaActual] = useState(0)
     const [generandoPDF, setGenerandoPDF] = useState(false)
     const [publicado, setPublicado] = useState(false)
+    const [publicando, setPublicando] = useState(false)
     const [mostrarConfeti, setMostrarConfeti] = useState(false)
     const previewRef = useRef(null)
+    const [pregunta] = useState(() => preguntaAleatoria())
+    const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
 
     const actualizarPagina = (campo, valor) => {
         setPaginas((prev) =>
@@ -81,11 +87,15 @@ export default function Crear() {
     }
 
     const publicarEnGaleria = () => {
-        guardarCuento({ titulo, emocion, paginas })
-        setPublicado(true)
-        sonidoExito()
-        setMostrarConfeti(true)
-        setTimeout(() => setMostrarConfeti(false), 2500)
+        setPublicando(true)
+        setTimeout(() => {
+            guardarCuento({ titulo, emocion, paginas })
+            setPublicando(false)
+            setPublicado(true)
+            sonidoExito()
+            setMostrarConfeti(true)
+            setTimeout(() => setMostrarConfeti(false), 2500)
+        }, 600)
     }
 
     const pagina = paginas[paginaActual]
@@ -144,12 +154,48 @@ export default function Crear() {
 
                     <button
                         disabled={!titulo || !emocion}
-                        onClick={() => setPaso('editando')}
+                        onClick={() => setPaso('reto')}
                         className="w-full flex items-center justify-center gap-2 bg-innova-orange hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-full transition-colors"
                     >
                         Empezar a escribir <ArrowRight size={18} />
                     </button>
                 </div>
+            </div>
+        )
+    }
+
+    // ---------- PANTALLA 1.5: PREGUNTA RETADORA ----------
+    if (paso === 'reto') {
+        return (
+            <div className="max-w-xl mx-auto px-4 py-16">
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl shadow-sm p-8 text-center"
+                >
+                    <span className="text-5xl mb-4 block">🤔</span>
+                    <h2 className="text-sm font-semibold text-innova-blue uppercase tracking-wide mb-3">
+                        Antes de empezar, piensa en esto
+                    </h2>
+                    <p className="text-xl font-bold text-innova-dark leading-relaxed mb-8">
+                        {pregunta}
+                    </p>
+                    <p className="text-gray-500 text-sm mb-6">
+                        Puedes contarle esta historia a tu cuento, o inventar una nueva 💭
+                    </p>
+                    <button
+                        onClick={() => setPaso('editando')}
+                        className="w-full flex items-center justify-center gap-2 bg-innova-orange hover:bg-orange-600 text-white font-semibold py-3 rounded-full transition-colors"
+                    >
+                        Ya lo pensé, ¡vamos a escribir! <ArrowRight size={18} />
+                    </button>
+                    <button
+                        onClick={() => setPaso('inicio')}
+                        className="text-sm text-gray-400 hover:text-gray-600 mt-4"
+                    >
+                        ← Volver
+                    </button>
+                </motion.div>
             </div>
         )
     }
@@ -273,7 +319,7 @@ export default function Crear() {
 
                     {paginas.length > 1 && (
                         <button
-                            onClick={() => eliminarPagina(paginaActual)}
+                            onClick={() => setConfirmandoEliminar(true)}
                             className="flex items-center gap-1 text-sm text-red-400 hover:text-red-500"
                         >
                             <Trash2 size={14} /> Eliminar esta página
@@ -298,6 +344,17 @@ export default function Crear() {
                 >
                     ← Cambiar título o emoción
                 </button>
+
+                <ConfirmDialog
+                    abierto={confirmandoEliminar}
+                    titulo="¿Eliminar esta página?"
+                    mensaje="Perderás el texto, dibujo y audio de esta página del cuento."
+                    onConfirmar={() => {
+                        eliminarPagina(paginaActual)
+                        setConfirmandoEliminar(false)
+                    }}
+                    onCancelar={() => setConfirmandoEliminar(false)}
+                />
             </div>
         )
     }
@@ -317,11 +374,11 @@ export default function Crear() {
                     <div className="flex gap-3">
                         <button
                             onClick={publicarEnGaleria}
-                            disabled={publicado}
+                            disabled={publicado || publicando}
                             className="flex items-center gap-2 bg-innova-green hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-full shadow-md disabled:opacity-60"
                         >
                             <Images size={18} />
-                            {publicado ? '¡Publicado! ✓' : 'Publicar en la Galería'}
+                            {publicando ? 'Publicando...' : publicado ? '¡Publicado! ✓' : 'Publicar en la Galería'}
                         </button>
                         <button
                             onClick={exportarPDF}

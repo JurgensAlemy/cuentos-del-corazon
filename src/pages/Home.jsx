@@ -21,7 +21,14 @@ export default function Home() {
                     </span>
 
                     <h1 className="text-4xl md:text-6xl font-extrabold text-innova-blue mb-4 leading-tight">
-                        Cuentos que nacen <br /> del corazón ❤️
+                        Cuentos que nacen <br /> del corazón{' '}
+                        <motion.span
+                            className="inline-block"
+                            animate={{ scale: [1, 1.15, 1] }}
+                            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                        >
+                            ❤️
+                        </motion.span>
                     </h1>
 
                     <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto">

@@ -36,7 +36,7 @@ export function useTTS() {
         window.speechSynthesis.onvoiceschanged = cargarVoz
     }, [])
 
-    const leer = useCallback((texto) => {
+    const leer = useCallback((texto, onFinish) => {
         if (!soportado || !texto) return
         window.speechSynthesis.cancel()
 
@@ -51,7 +51,10 @@ export function useTTS() {
         utterance.pitch = 1
 
         utterance.onstart = () => setHablando(true)
-        utterance.onend = () => setHablando(false)
+        utterance.onend = () => {
+            setHablando(false)
+            onFinish?.()
+        }
         utterance.onerror = () => setHablando(false)
 
         window.speechSynthesis.speak(utterance)

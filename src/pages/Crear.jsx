@@ -3,7 +3,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     ArrowLeft, ArrowRight, Plus, Trash2, Download,
-    Pencil, ImageIcon, BookOpen, Sparkles, Images,
+    Pencil, ImageIcon, BookOpen, Sparkles, Images, Mic,
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -17,6 +17,7 @@ import Confetti from '../components/Confetti'
 import BotonLeer from '../components/BotonLeer'
 
 import ConfirmDialog from '../components/ConfirmDialog'
+import LectorLibro from '../components/LectorLibro'
 
 const emocionesDisponibles = [
     { id: 'alegria', emoji: '😊', label: 'Alegría', color: 'bg-innova-orange' },
@@ -47,6 +48,7 @@ export default function Crear() {
     const previewRef = useRef(null)
     const [pregunta] = useState(() => preguntaAleatoria())
     const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
+    const [mostrarLector, setMostrarLector] = useState(false)
 
     const actualizarPagina = (campo, valor) => {
         setPaginas((prev) =>
@@ -262,47 +264,70 @@ export default function Crear() {
                         </div>
 
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="font-semibold text-innova-dark">
-                                    Ilustra esta parte
-                                </label>
-                                <div className="flex bg-gray-100 rounded-full p-1">
-                                    <button
-                                        onClick={() => actualizarPagina('modoVisual', 'dibujo')}
-                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${pagina.modoVisual === 'dibujo' ? 'bg-white shadow text-innova-blue' : 'text-gray-500'
-                                            }`}
-                                    >
-                                        <Pencil size={14} /> Dibujar
-                                    </button>
-                                    <button
-                                        onClick={() => actualizarPagina('modoVisual', 'imagen')}
-                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${pagina.modoVisual === 'imagen' ? 'bg-white shadow text-innova-blue' : 'text-gray-500'
-                                            }`}
-                                    >
-                                        <ImageIcon size={14} /> Subir imagen
-                                    </button>
-                                </div>
+                            <label className="font-semibold text-innova-dark mb-2 block">
+                                Agrega contenido a esta página
+                            </label>
+
+                            <div className="flex bg-gray-100 rounded-full p-1 mb-4 w-fit">
+                                <button
+                                    onClick={() => actualizarPagina('modoVisual', 'dibujo')}
+                                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-colors ${pagina.modoVisual === 'dibujo' ? 'bg-white shadow text-innova-blue' : 'text-gray-500'
+                                        }`}
+                                >
+                                    <Pencil size={14} /> Dibujar
+                                </button>
+                                <button
+                                    onClick={() => actualizarPagina('modoVisual', 'imagen')}
+                                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-colors ${pagina.modoVisual === 'imagen' ? 'bg-white shadow text-innova-blue' : 'text-gray-500'
+                                        }`}
+                                >
+                                    <ImageIcon size={14} /> Imagen
+                                </button>
+                                <button
+                                    onClick={() => actualizarPagina('modoVisual', 'voz')}
+                                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-colors ${pagina.modoVisual === 'voz' ? 'bg-white shadow text-innova-blue' : 'text-gray-500'
+                                        }`}
+                                >
+                                    <Mic size={14} /> Voz
+                                </button>
                             </div>
 
-                            {pagina.modoVisual === 'dibujo' ? (
-                                <DrawingCanvas
-                                    key={pagina.id}
-                                    value={pagina.dibujo}
-                                    onChange={(data) => actualizarPagina('dibujo', data)}
-                                />
-                            ) : (
-                                <ImageUploader
-                                    value={pagina.imagen}
-                                    onChange={(data) => actualizarPagina('imagen', data)}
-                                />
-                            )}
-                        </div>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={pagina.modoVisual}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    {pagina.modoVisual === 'dibujo' && (
+                                        <DrawingCanvas
+                                            key={pagina.id}
+                                            value={pagina.dibujo}
+                                            onChange={(data) => actualizarPagina('dibujo', data)}
+                                        />
+                                    )}
+                                    {pagina.modoVisual === 'imagen' && (
+                                        <ImageUploader
+                                            value={pagina.imagen}
+                                            onChange={(data) => actualizarPagina('imagen', data)}
+                                        />
+                                    )}
+                                    {pagina.modoVisual === 'voz' && (
+                                        <VoiceRecorder
+                                            value={pagina.audio}
+                                            onChange={(url) => actualizarPagina('audio', url)}
+                                        />
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
 
-                        <div>
-                            <label className="block font-semibold text-innova-dark mb-2">
-                                Cuenta esta parte con tu voz (opcional)
-                            </label>
-                            <VoiceRecorder value={pagina.audio} onChange={(url) => actualizarPagina('audio', url)} />
+                            {/* Indicadores de qué ya se agregó, aunque no esté visible ahora mismo */}
+                            <div className="flex gap-3 mt-3 text-xs text-gray-400">
+                                {pagina.dibujo && pagina.modoVisual !== 'dibujo' && <span>✏️ Dibujo guardado</span>}
+                                {pagina.imagen && pagina.modoVisual !== 'imagen' && <span>🖼️ Imagen guardada</span>}
+                                {pagina.audio && pagina.modoVisual !== 'voz' && <span>🎤 Audio guardado</span>}
+                            </div>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -373,8 +398,15 @@ export default function Crear() {
                     </button>
                     <div className="flex gap-3">
                         <button
+                            onClick={() => setMostrarLector(true)}
+                            className="flex items-center gap-2 bg-innova-blue hover:bg-blue-700 text-white font-semibold px-5 py-3 rounded-full shadow-md"
+                        >
+                            <BookOpen size={18} />
+                            Leer como libro
+                        </button>
+                        <button
                             onClick={publicarEnGaleria}
-                            disabled={publicado || publicando}
+                            disabled={publicado}
                             className="flex items-center gap-2 bg-innova-green hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-full shadow-md disabled:opacity-60"
                         >
                             <Images size={18} />
@@ -433,6 +465,13 @@ export default function Crear() {
                     ))}
                 </div>
             </div>
+            {mostrarLector && (
+                <LectorLibro
+                    titulo={titulo}
+                    paginas={paginas}
+                    onCerrar={() => setMostrarLector(false)}
+                />
+            )}
         </>
     )
 }

@@ -1,13 +1,12 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Home, Sparkles, PencilLine, Images, Info } from 'lucide-react'
 
-import { motion, AnimatePresence } from 'framer-motion'
-
 const navItems = [
-    { to: '/', label: 'Inicio', icon: Home },
-    { to: '/explorador', label: 'Explorador', icon: Sparkles },
-    { to: '/crear', label: 'Crear mi cuento', icon: PencilLine },
-    { to: '/galeria', label: 'Galería', icon: Images },
+    { to: '/', label: 'Inicio', icon: Home, color: 'bg-innova-blue' },
+    { to: '/explorador', label: 'Explorador', icon: Sparkles, color: 'bg-innova-green' },
+    { to: '/crear', label: 'Crear mi cuento', icon: PencilLine, color: 'bg-innova-orange' },
+    { to: '/galeria', label: 'Galería', icon: Images, color: 'bg-purple-500' },
 ]
 
 export default function Layout() {
@@ -16,43 +15,56 @@ export default function Layout() {
     return (
         <div className="min-h-screen flex flex-col bg-innova-blue-light">
             <header className="bg-white shadow-sm sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2">
-                        <img src="/logo_cuentos.png" alt="Cuentos del Corazón" className="h-9 w-9 object-contain" />
-                        <span className="font-bold text-lg text-innova-blue">Cuentos del Corazón</span>
+                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+                    <Link to="/" className="flex items-center gap-2 shrink-0">
+                        <motion.img
+                            src="/logo_cuentos.png"
+                            alt="Cuentos del Corazón"
+                            className="h-9 w-9 object-contain"
+                            whileHover={{ rotate: [0, -8, 8, -4, 0] }}
+                            transition={{ duration: 0.5 }}
+                        />
+                        <span className="font-extrabold text-base sm:text-lg text-innova-blue tracking-tight truncate">
+                            Cuentos del Corazón
+                        </span>
                     </Link>
 
-                    <nav className="hidden md:flex gap-1">
-                        {navItems.map(({ to, label, icon: Icon }) => {
+                    <nav className="hidden lg:flex gap-2">
+                        {navItems.map(({ to, label, icon: Icon, color }) => {
                             const active = location.pathname === to
                             return (
-                                <Link
-                                    key={to}
-                                    to={to}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-colors ${active ? 'bg-innova-blue text-white' : 'text-gray-600 hover:bg-innova-blue-light'
-                                        }`}
-                                >
-                                    <Icon size={16} />
-                                    {label}
+                                <Link key={to} to={to} className="relative">
+                                    <motion.div
+                                        whileHover={{ y: -3, rotate: active ? 0 : -1 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm ${active
+                                            ? `${color} text-white`
+                                            : 'bg-gray-50 text-gray-500 hover:text-innova-dark'
+                                            }`}
+                                    >
+                                        <Icon size={16} />
+                                        {label}
+                                    </motion.div>
                                 </Link>
                             )
                         })}
                     </nav>
                 </div>
 
-                {/* Nav mobile simple, abajo del header */}
-                <nav className="md:hidden flex overflow-x-auto gap-1 px-3 pb-2">
-                    {navItems.map(({ to, label, icon: Icon }) => {
+                {/* Nav mobile */}
+                <nav className="lg:hidden flex overflow-x-auto gap-2 px-3 pb-3">
+                    {navItems.map(({ to, label, icon: Icon, color }) => {
                         const active = location.pathname === to
                         return (
-                            <Link
-                                key={to}
-                                to={to}
-                                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${active ? 'bg-innova-blue text-white' : 'bg-innova-blue-light text-gray-600'
-                                    }`}
-                            >
-                                <Icon size={14} />
-                                {label}
+                            <Link key={to} to={to} className="shrink-0">
+                                <motion.div
+                                    whileTap={{ scale: 0.92 }}
+                                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap ${active ? `${color} text-white` : 'bg-gray-50 text-gray-500'
+                                        }`}
+                                >
+                                    <Icon size={14} />
+                                    {label}
+                                </motion.div>
                             </Link>
                         )
                     })}

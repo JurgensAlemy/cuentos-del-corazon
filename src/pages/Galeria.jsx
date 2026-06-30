@@ -9,6 +9,7 @@ import Reacciones from '../components/Reacciones'
 import { sonidoClickSuave, sonidoExito } from '../utils/sounds'
 
 import ConfirmDialog from '../components/ConfirmDialog'
+import LectorLibro from '../components/LectorLibro'
 
 const emocionInfo = {
     alegria: { emoji: '😊', label: 'Alegría', color: 'border-innova-orange', bg: 'bg-innova-orange/10 text-innova-orange' },
@@ -22,6 +23,7 @@ export default function Galeria() {
     const [abierto, setAbierto] = useState(null)
     const [confirmando, setConfirmando] = useState(false)
     const [filtro, setFiltro] = useState('todas')
+    const [leyendo, setLeyendo] = useState(null)
 
     useEffect(() => {
         setCuentos(obtenerCuentos())
@@ -185,9 +187,17 @@ export default function Galeria() {
                                 <X size={22} />
                             </button>
 
-                            <div className="flex items-center gap-2 mb-5">
-                                <BookOpen className="text-innova-blue" size={22} />
-                                <h2 className="text-xl font-bold text-innova-blue">{abierto.titulo}</h2>
+                            <div className="flex items-center justify-between gap-2 mb-5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <BookOpen className="text-innova-blue shrink-0" size={22} />
+                                    <h2 className="text-xl font-bold text-innova-blue truncate">{abierto.titulo}</h2>
+                                </div>
+                                <button
+                                    onClick={() => setLeyendo(abierto)}
+                                    className="shrink-0 bg-innova-blue hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-full"
+                                >
+                                    Leer como libro
+                                </button>
                             </div>
 
                             <div className="space-y-6">
@@ -256,6 +266,14 @@ export default function Galeria() {
                 onConfirmar={() => borrar(abierto.id)}
                 onCancelar={() => setConfirmando(false)}
             />
+
+            {leyendo && (
+                <LectorLibro
+                    titulo={leyendo.titulo}
+                    paginas={leyendo.paginas}
+                    onCerrar={() => setLeyendo(null)}
+                />
+            )}
         </div>
     )
 }
